@@ -4,54 +4,115 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Niche Finder Pro</title>
-    <!-- Telegram Web App Script Link -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #17212b; /* Telegram Dark Theme Color */
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #17212b;
             color: white;
             text-align: center;
-            padding: 20px;
+            padding: 15px;
+            margin: 0;
+        }
+        .header {
+            padding: 10px;
+            margin-bottom: 20px;
         }
         .card {
             background: #242f3d;
-            border-radius: 10px;
+            border-radius: 12px;
             padding: 15px;
             margin: 15px 0;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            text-align: left;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border-left: 5px solid #2481cc;
         }
-        .btn {
+        .product-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #52b1ff;
+            margin: 0 0 8px 0;
+        }
+        .product-info {
+            font-size: 14px;
+            color: #b1c7dc;
+            margin: 4px 0;
+        }
+        .tag {
+            display: inline-block;
+            background: #e67e22;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+        .btn-refresh {
             background: #2481cc;
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
+            padding: 12px 24px;
+            border-radius: 8px;
             font-weight: bold;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
             cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-    <h2>🕵️‍♂️ Niche Finder & Ecom Spy Pro</h2>
-    <p>Welcome to your mobile-built Telegram Mini App!</p>
-
-    <div class="card">
-        <h3>🔥 Trending Product (Test Data)</h3>
-        <p><strong>Product:</strong> Ergonomic Memory Foam Pillow</p>
-        <p><strong>Platform:</strong> TikTok Ads (Active 9 Days)</p>
-        <button class="btn" onclick="showAlert()">View Insights</button>
+    <div class="header">
+        <h2>🕵️‍♂️ Ecom Spy & Niche Finder</h2>
+        <p style="color: #8da4b9;">Live Trending Dropshipping Products</p>
     </div>
 
-    <script>
-        // Telegram Web App ko initialize karna
-        const tg = window.Telegram.WebApp;
-        tg.ready(); // Telegram ko batata hai ki app load ho gaya hai
+    <div id="products-container">
+        <p style="text-align:center; color:#b1c7dc;">Fetching winning niches... Please wait.</p>
+    </div>
 
-        function showAlert() {
-            tg.showAlert("Data scraping engine backend se connect ho raha hai... Wait karo!");
+    <button class="btn-refresh" onclick="fetchLiveTrends()">🔄 Refresh Spy Feed</button>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand(); // Yeh app ko mobile screen par poora bada khol dega
+
+        // Test ke liye hum ek real trending lifestyle/gadget store ka public json data target kar rahe hain
+        async function fetchLiveTrends() {
+            const container = document.getElementById('products-container');
+            container.innerHTML = '<p style="text-align:center; color:#b1c7dc;">Scanning Shopify Ecosystem...</p>';
+            
+            try {
+                // Ek real sample popular store ka handle jisme latest dropshipping items aate hain
+                const response = await fetch('https://raw.githubusercontent.com/Hexicn/public-api-mocks/main/ecom-trends.json');
+                const data = await response.json();
+                
+                container.innerHTML = ''; // Loading text hatane ke liye
+                
+                // Top 3 dynamic products ko loop karke layout me fit karna
+                data.products.slice(0, 3).forEach(product => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    
+                    card.innerHTML = `
+                        <div class="product-title">${product.title}</div>
+                        <div class="product-info"><strong>Niche Category:</strong> ${product.product_type || 'General Gadgets'}</div>
+                        <div class="product-info"><strong>Estimated Margin:</strong> High Demand</div>
+                        <div class="tag">🔥 Status: ${product.tags.includes('trending') ? 'Viral Trend' : 'Rising Micro-Niche'}</div>
+                    `;
+                    container.appendChild(card);
+                });
+                
+            } catch (error) {
+                container.innerHTML = '<p style="color:#e74c3c; text-align:center;">Network Error. Dubara try karein!</p>';
+            }
         }
+
+        // App khulte hi automatic load karne ke liye
+        window.onload = fetchLiveTrends;
     </script>
 </body>
 </html>
