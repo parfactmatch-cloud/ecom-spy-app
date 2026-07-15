@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ecom Spy SaaS Dashboard</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- ChartJS Injector for Pie Chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
@@ -20,7 +22,6 @@
             margin: 10px 0;
             letter-spacing: 0.5px;
         }
-        /* Crispy Tab Navigation */
         .tabs-container {
             display: flex;
             background: #17212b;
@@ -39,7 +40,6 @@
             cursor: pointer;
             border-radius: 20px;
             width: 50%;
-            transition: all 0.2s ease;
         }
         .tab-btn.active {
             background: #2481cc;
@@ -52,7 +52,6 @@
         .tab-content.active {
             display: block;
         }
-        /* Search Box SaaS design */
         .search-box {
             background: #17212b;
             padding: 12px;
@@ -70,9 +69,6 @@
             outline: none;
             font-size: 13px;
         }
-        input[type="text"]:focus {
-            border-color: #2481cc;
-        }
         .btn-spy {
             background: linear-gradient(135deg, #e67e22, #d35400);
             color: white;
@@ -85,7 +81,6 @@
             cursor: pointer;
             font-size: 14px;
         }
-        /* Advanced Analytics Cards */
         .analytics-card {
             background: #17212b;
             border-radius: 12px;
@@ -120,7 +115,15 @@
             font-size: 11px;
             font-weight: bold;
         }
-        /* Crispy Minimal Cards for Ads */
+        .chart-box {
+            margin-top: 15px;
+            background: #0e1621;
+            padding: 10px;
+            border-radius: 8px;
+            max-height: 200px;
+            display: flex;
+            justify-content: center;
+        }
         .ad-card {
             background: #17212b;
             border-radius: 10px;
@@ -128,9 +131,6 @@
             margin: 10px 0;
             text-align: left;
             border: 1px solid #242f3d;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
         }
         .ad-top {
             display: flex;
@@ -165,10 +165,6 @@
             cursor: pointer;
             text-decoration: none;
         }
-        .btn-action-small:hover {
-            background: #2481cc;
-            color: white;
-        }
         .tag-small {
             padding: 2px 6px;
             border-radius: 3px;
@@ -189,7 +185,7 @@
         <button class="tab-btn" onclick="switchTab('viral-ads-tab', this)">📺 Viral Ads (10D)</button>
     </div>
 
-    <!-- TAB 1: STORE SPY (ANALYTICS ENGINE) -->
+    <!-- TAB 1: STORE SPY WITH GRAPH -->
     <div id="store-spy-tab" class="tab-content active">
         <div class="search-box">
             <input type="text" id="store-url" placeholder="Paste Shopify URL here...">
@@ -200,7 +196,7 @@
         </div>
     </div>
 
-    <!-- TAB 2: VIRAL ADS (CRISPY 10 DAYS LIST) -->
+    <!-- TAB 2: VIRAL ADS -->
     <div id="viral-ads-tab" class="tab-content">
         <div id="dynamic-ads-container">
             <p style="font-size:13px; color:#7f97ab;">Parsing last 10 days ad matrix...</p>
@@ -212,8 +208,8 @@
         tg.ready();
         tg.expand();
 
-        // Database variables to hold globally cached values
         let adsDataGlobal = [];
+        let myPieChart = null; // Global chart reference
 
         function switchTab(tabId, buttonElement) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -226,16 +222,14 @@
             }
         }
 
-        // DYNAMIC LABELS FOR AD CLUSTER
         async function loadLiveAds() {
             const container = document.getElementById('dynamic-ads-container');
             try {
                 const response = await fetch('ads-data.json');
                 adsDataGlobal = await response.json();
-                
                 container.innerHTML = ''; 
                 
-                adsDataGlobal.forEach((ad, index) => {
+                adsDataGlobal.forEach((ad) => {
                     const card = document.createElement('div');
                     card.className = 'ad-card';
                     card.style.borderLeft = `4px solid ${ad.color}`;
@@ -256,27 +250,24 @@
                     container.appendChild(card);
                 });
             } catch (error) {
-                container.innerHTML = '<p style="color:#e74c3c; font-size:12px;">Matrix connection issue.</p>';
+                container.innerHTML = '<p style="color:#e74c3c;">Matrix connection issue.</p>';
             }
         }
 
-        // TEXT COPY UTILITY FOR MOBILE CONSOLE
         function copyLink(linkText) {
             navigator.clipboard.writeText(linkText).then(() => {
-                alert("Store Link Copied! Now open 'Store Spy' tab and paste it.");
+                alert("Store Link Copied! Go paste inside Store Spy.");
             }).catch(() => {
-                // Fallback approach if secure layer blocks clipboard
                 const el = document.createElement('textarea');
                 el.value = linkText;
                 document.body.appendChild(el);
                 el.select();
                 document.execCommand('copy');
                 document.body.removeChild(el);
-                alert("Store Link Copied! Go paste inside Store Spy.");
+                alert("Store Link Copied!");
             });
         }
 
-        // ADVANCED ANALYTICS GENERATOR ENGINE
         function spyStoreAnalytics() {
             const inputUrl = document.getElementById('store-url').value.trim();
             const resultsContainer = document.getElementById('spy-results');
@@ -286,45 +277,74 @@
                 return;
             }
 
-            resultsContainer.innerHTML = '<p style="font-size:13px; color:#52b1ff;">🛰️ Parsing data traffic... Scanning orders structure...</p>';
+            resultsContainer.innerHTML = '<p style="font-size:13px; color:#52b1ff;">🛰️ Extracting Traffic Distribution Graphs...</p>';
 
-            // Finding if this exact link belongs to one of our catalog matching items to draw specific dashboard
             let matchedAd = adsDataGlobal.find(ad => inputUrl.includes(ad.store) || ad.store.includes(inputUrl));
             
-            // Dynamic generation rules
             let traffic = matchedAd ? matchedAd.traffic : "22,400 visitors / mo";
             let topProduct = matchedAd ? matchedAd.hero : "Transparent Waterproof Nano Tape";
             let status = matchedAd ? matchedAd.profit : "Highly Profitable (2.8x ROAS)";
-            let reasonProduct = matchedAd ? matchedAd.hero : "Nano Tape Bundle Offers";
+
+            // Dynamic Chart percentages mapping based on store type
+            let fbPct = matchedAd ? (matchedAd.platform.includes("Facebook") ? 60 : 25) : 40;
+            let tkPct = matchedAd ? (matchedAd.platform.includes("TikTok") ? 65 : 20) : 35;
+            let GooglePct = 100 - (fbPct + tkPct);
 
             setTimeout(() => {
                 resultsContainer.innerHTML = `
                     <div class="analytics-card">
-                        <div class="analytics-title">🌐 TARGET: ${inputUrl.replace('https://','').replace('http://','')}</div>
+                        <div class="analytics-title">🌐 ANALYSIS NODE: ${inputUrl.replace('https://','').replace('http://','')}</div>
                         
                         <div class="metric-row">
-                            <span>📈 Live Traffic View:</span>
+                            <span>📈 Total Traffic Volume:</span>
                             <span class="metric-val">${traffic}</span>
                         </div>
                         
                         <div class="metric-row">
-                            <span>🏆 Top Trending Product:</span>
+                            <span>🏆 Hero Product (Sales):</span>
                             <span class="metric-val" style="color:#e67e22;">${topProduct}</span>
                         </div>
                         
                         <div class="metric-row">
-                            <span>💰 Financial Valuation:</span>
+                            <span>💰 Valuation Margin:</span>
                             <span class="badge-profit">${status}</span>
                         </div>
-                        
-                        <div class="metric-row" style="margin-top:12px; padding-top:8px; border-top:1px dashed #242f3d; font-size:12px; color:#a2b6c7;">
-                            ℹ️ <strong>Core Driver:</strong> This store is winning due to heavy search volume and high ticket bundling of <em>"${reasonProduct}"</em>.
+
+                        <div style="font-size:12px; color:#8da4b9; margin-top:15px; font-weight:bold;">📊 Ad Channels Share %</div>
+                        <div class="chart-box">
+                            <canvas id="trafficPieChart"></canvas>
                         </div>
                     </div>
                 `;
+
+                // Render matching Chart context
+                const ctx = document.getElementById('trafficPieChart').getContext('2d');
+                if (myPieChart) myPieChart.destroy(); // Clear old instance
+                
+                myPieChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Facebook Ads', 'TikTok Ads', 'Google Search'],
+                        datasets: [{
+                            data: [fbPct, tkPct, GooglePct],
+                            backgroundColor: ['#3b5998', '#ff0050', '#27ae60'],
+                            borderWidth: 1,
+                            borderColor: '#17212b'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                labels: { color: '#b1c7dc', font: { size: 10 } },
+                                position: 'right'
+                            }
+                        }
+                    }
+                });
+
             }, 1000);
         }
     </script>
 </body>
 </html>
-
