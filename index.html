@@ -83,7 +83,7 @@
             font-size: 14px;
         }
         
-        /* Premium Lock */
+        /* Paywall Styling Overlay */
         #premium-lock-screen {
             display: none;
             background: rgba(14, 22, 33, 0.97);
@@ -112,7 +112,7 @@
             margin-top: 15px;
         }
 
-        /* SaaS Data Cards Layout */
+        /* Card Structures */
         .ad-card {
             background: #17212b;
             border-radius: 10px;
@@ -120,7 +120,6 @@
             margin: 12px 0;
             text-align: left;
             border: 1px solid #242f3d;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
         .ad-top {
             display: flex;
@@ -253,7 +252,8 @@
                 Unlock dynamic filters, complete real-time ads indices database, Pinterest Hot Search Trends & automated AI ad creative copywriter engine.
             </p>
             <div style="font-size:17px; font-weight:bold; color:white; margin:12px 0;">💎 Price: 50 Telegram Stars</div>
-            <button class="btn-unlock" onclick="triggerStarsPayment()">⚡ Checkout with Telegram Stars</button>
+            <!-- Triggers clean popup window native checkout inside same app window -->
+            <button class="btn-unlock" onclick="triggerNativeStarsCheckout()">⚡ Checkout with Telegram Stars</button>
         </div>
     </div>
 
@@ -289,7 +289,7 @@
         tg.ready();
         tg.expand();
 
-        let isPremiumUser = false; // System lock trigger gate
+        let isPremiumUser = false; 
         let adsDataGlobal = [];
         let myPieChart = null; 
 
@@ -318,9 +318,34 @@
             buttonElement.classList.add('active');
         }
 
-        function triggerStarsPayment() {
-            tg.sendData(JSON.stringify({action: "request_premium_invoice", tokens: 50}));
-            alert("🚀 Secure billing transaction invoice routed to your chat thread.");
+        // DYNAMIC NATIVE POPUP INVOICE HOOK INJECTOR
+        async function triggerNativeStarsCheckout() {
+            try {
+                // Production flow fetches dynamic temporary parameters token via your server API
+                // For direct simulation testing inside webapp frontend, we call the native layout:
+                
+                if (tg.openInvoice) {
+                    // Once you connect your real generated link token from BotFather/Make API, paste inside url string below:
+                    let targetInvoiceUrl = "https://t.me/invoice/example_token"; 
+                    
+                    tg.openInvoice(targetInvoiceUrl, function(status) {
+                        if (status === 'paid') {
+                            alert("🌟 Payment Verified! Welcome to Pro SaaS Tools Layer.");
+                            isPremiumUser = true;
+                            document.getElementById('premium-lock-screen').style.display = 'none';
+                            switchTab('viral-ads-tab', document.querySelectorAll('.tab-btn')[1]);
+                        } else if (status === 'cancelled') {
+                            alert("❌ Transaction cancelled by user context.");
+                        } else {
+                            alert("⚠️ Checkout Processing/Pending state update.");
+                        }
+                    });
+                } else {
+                    alert("System API Context not fully initialized inside Telegram Web client layer.");
+                }
+            } catch (e) {
+                alert("Matrix tunnel error.");
+            }
         }
 
         function renderGrid(containerId, dataArray, typeCode) {
@@ -426,3 +451,4 @@
     </script>
 </body>
 </html>
+
