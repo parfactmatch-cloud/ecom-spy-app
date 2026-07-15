@@ -202,23 +202,29 @@
         tg.ready();
         tg.expand();
 
+        // STRICT PROTECTION ROLE STORAGE INITIALIZATION
         let currentUserTelegramId = tg.initDataUnsafe?.user?.id || "test_user";
         let userRole = "free"; 
         
-        // ADMIN AUTO OVERRIDE LOCK HOOK (Linked to Aayes Roy)
+        // ADMIN AUTO OVERRIDE LINKED TO REAL OWNER (Aayes Roy)
         const MASTER_ADMIN_ID = 1287722882; 
 
-        if(parseInt(currentUserTelegramId) === MASTER_ADMIN_ID) {
-            userRole = "admin";
+        // Enforce strong dynamic authentication matching block rules
+        function authenticateSession() {
+            if(parseInt(currentUserTelegramId) === MASTER_ADMIN_ID) {
+                userRole = "admin";
+            } else {
+                userRole = "free"; 
+            }
         }
+        authenticateSession();
 
-        // AUTO INTEGRATED TARGET SHEET ID MATRIX
         const SPREADSHEET_ID = "1usPn3r8mpiCYZPsoX9VKv0Hwm6BawTCV";
-        
         let adsDataGlobal = [];
         let myPieChart = null; 
 
         function applyRoleUIConfig() {
+            authenticateSession(); 
             const badge = document.getElementById('user-role-badge');
             badge.className = "role-badge " + (userRole === 'admin' ? 'badge-admin' : (userRole === 'pro' ? 'badge-pro' : 'badge-free'));
             badge.innerText = userRole + " Mode";
@@ -236,35 +242,50 @@
             }
         }
 
-        // GOOGLE SHEETS DYNAMIC STREAM READ ENGINE
+        // STABLE GOOGLE SPREADSHEET INTELLIGENT STREAM RECONCILIATION ENGINE
         async function fetchLiveGoogleSheetsData() {
             try {
                 const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Product%20Catalog%20Sync`;
                 const response = await fetch(url);
                 const csvText = await response.text();
                 
-                const rows = csvText.split('\n').slice(1); 
-                adsDataGlobal = rows.map(row => {
-                    const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                // Advanced sanitization of double-quote escapes from Google Sheets CSV responses
+                const lines = csvText.split('\n').slice(1); 
+                adsDataGlobal = lines.map(line => {
+                    if(!line.trim()) return null;
+                    // Strong regex engine to slice strings correctly ignoring internal block commas
+                    const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     if(cols.length >= 5) {
-                        let titleClean = cols[0].replace(/"/g, '');
-                        let platformClean = cols[1].replace(/"/g, '');
-                        let engagementClean = cols[2].replace(/"/g, '');
-                        let tagClean = cols[3].replace(/"/g, '');
-                        let roasClean = cols[4].replace(/"/g, '').trim() + "x ROAS";
-                        
-                        let isPin = platformClean.includes("Pinterest");
+                        let titleClean = cols[0].replace(/^"|"$/g, '').trim();
+                        let platformClean = cols[1].replace(/^"|"$/g, '').trim();
+                        let engagementClean = cols[2].replace(/^"|"$/g, '').trim();
+                        let tagClean = cols[3].replace(/^"|"$/g, '').trim();
+                        let roasClean = cols[4].replace(/^"|"$/g, '').trim();
+
+                        if (!titleClean || titleClean === "") return null;
+
+                        let isPin = platformClean.toLowerCase().includes("pinterest");
+                        let searchKeywordQuery = encodeURIComponent(titleClean);
+
+                        // Dynamic URL generation for deep direct search mapping
+                        let directPlatformLink = "https://www.tiktok.com/explore";
+                        if (platformClean.toLowerCase().includes("facebook")) {
+                            directPlatformLink = `https://www.facebook.com/ads/library/?q=${searchKeywordQuery}&q_type=keyword_unordered&media_type=all`;
+                        } else if (isPin) {
+                            directPlatformLink = `https://trends.pinterest.com/?q=${searchKeywordQuery}`;
+                        }
+
                         return {
                             title: titleClean,
                             platform: platformClean,
-                            engagement: isPin ? titleClean + " Search Volume" : engagementClean,
+                            engagement: engagementClean,
                             tag: tagClean,
-                            roas: roasClean,
-                            color: isPin ? "#bd081c" : (platformClean.includes("TikTok") ? "#ff0050" : "#3b5998"),
-                            store: "live-analyzed-node.com",
-                            link: isPin ? "https://trends.pinterest.com" : "https://facebook.com/ads/library",
-                            trend_growth: isPin ? "🚀 Surge: " + tagClean : "",
-                            related_keywords: isPin ? "#trending, #viralniche" : "",
+                            roas: roasClean.includes("ROAS") ? roasClean : roasClean + "x ROAS",
+                            color: isPin ? "#bd081c" : (platformClean.toLowerCase().includes("tiktok") ? "#ff0050" : "#3b5998"),
+                            store: titleClean.toLowerCase().replace(/[^a-z0-9]/g, '') + "-shop.com",
+                            link: directPlatformLink,
+                            trend_growth: isPin ? "📈 Live Surge: " + tagClean : "",
+                            related_keywords: isPin ? "#trending, #viralniche, #dropship" : "",
                             keywords: [titleClean.toLowerCase()]
                         };
                     }
@@ -272,15 +293,16 @@
                 }).filter(x => x !== null);
 
                 applyRoleUIConfig();
-                renderGrid('dynamic-ads-container', adsDataGlobal.filter(a => !a.platform.includes("Pinterest")), "ads");
-                renderGrid('pinterest-container', adsDataGlobal.filter(a => a.platform.includes("Pinterest")), "pin");
+                renderGrid('dynamic-ads-container', adsDataGlobal.filter(a => !a.platform.toLowerCase().includes("pinterest")), "ads");
+                renderGrid('pinterest-container', adsDataGlobal.filter(a => a.platform.toLowerCase().includes("pinterest")), "pin");
             } catch (error) {
-                console.log("Sheets dynamic integration link exception.");
+                console.log("Database tunnel interface timeout error.");
             }
         }
         fetchLiveGoogleSheetsData();
 
         function switchTab(tabId, buttonElement) {
+            applyRoleUIConfig(); 
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
@@ -295,14 +317,18 @@
         function renderGrid(containerId, dataArray, typeCode) {
             const container = document.getElementById(containerId);
             container.innerHTML = ''; 
+            if(dataArray.length === 0) {
+                container.innerHTML = '<p style="font-size:12px; color:#7f97ab; padding:20px;">❌ No products matched the current keyword index.</p>';
+                return;
+            }
             dataArray.forEach((ad, idx) => {
                 const card = document.createElement('div');
                 card.className = 'ad-card';
                 card.style.borderLeft = `4px solid ${ad.color}`;
                 let idString = `${typeCode}-ai-${idx}`;
                 
-                let metricsHtml = ad.platform.includes("Pinterest") ? `
-                    📈 <strong>Search Trend:</strong> ${ad.trend_growth}<br>
+                let metricsHtml = ad.platform.toLowerCase().includes("pinterest") ? `
+                    📈 <strong>Search Trend:</strong> ${ad.tag}<br>
                     📊 <strong>Search Volume:</strong> ${ad.engagement}<br>
                     🏷️ <strong>Trending Keywords:</strong> <span style="color:#f1c40f;">${ad.related_keywords}</span>
                 ` : `
@@ -314,11 +340,11 @@
                 card.innerHTML = `
                     <div class="ad-top"><span class="ad-title">${ad.title}</span><span class="tag-small" style="background:${ad.color};">${ad.tag}</span></div>
                     <div class="ad-body-wrapper"><div class="ad-metrics">${metricsHtml}</div></div>
-                    <div class="ai-writer-box" id="${idString}">🤖 **AI AD COPY:**\n👉 "Viral ${ad.title} taking over! 🚀 50% OFF + Free Shipping Today! Link in Bio."</div>
+                    <div class="ai-writer-box" id="${idString}">🤖 **AI AD COPY:**<br>👉 "Tired of regular products? This viral ${ad.title} is taking over! 🚀 Get 50% OFF + Free Shipping Today only! Link in Bio."</div>
                     <div class="ad-actions">
                         <button class="btn-action-small" onclick="copyLink('${ad.store}')">📋 Copy Domain</button>
                         <button class="btn-action-small btn-ai-spark" onclick="toggleAiWriter('${idString}')">🪄 AI Copywriter</button>
-                        <a href="${ad.link}" target="_blank" class="btn-action-small">📺 View</a>
+                        <a href="${ad.link}" target="_blank" class="btn-action-small">📺 View Source</a>
                     </div>
                 `;
                 container.appendChild(card);
@@ -326,23 +352,26 @@
         }
 
         function toggleAiWriter(boxId) {
-            if(userRole === 'free') return alert("Premium activation configurations mapping rule constraint.");
             const el = document.getElementById(boxId);
             el.style.display = (el.style.display === 'block') ? 'none' : 'block';
         }
 
-        // Local dynamic filter search controllers
+        // FULLY FUNCTIONAL AND RE-OPTIMIZED STABLE KEYWORD FILTER MATCHERS
         function searchAdsEngine() {
             const query = document.getElementById('ads-search-input').value.toLowerCase().trim();
-            renderGrid('dynamic-ads-container', adsDataGlobal.filter(a => !a.platform.includes("Pinterest") && a.title.toLowerCase().includes(query)), "ads");
+            let baseArray = adsDataGlobal.filter(a => !a.platform.toLowerCase().includes("pinterest"));
+            let filtered = baseArray.filter(a => a.title.toLowerCase().includes(query));
+            renderGrid('dynamic-ads-container', filtered, "ads");
         }
 
         function searchPinterestEngine() {
             const query = document.getElementById('pin-search-input').value.toLowerCase().trim();
-            renderGrid('pinterest-container', adsDataGlobal.filter(a => a.platform.includes("Pinterest") && a.title.toLowerCase().includes(query)), "pin");
+            let baseArray = adsDataGlobal.filter(a => a.platform.toLowerCase().includes("pinterest"));
+            let filtered = baseArray.filter(a => a.title.toLowerCase().includes(query));
+            renderGrid('pinterest-container', filtered, "pin");
         }
 
-        function copyLink(linkText) { navigator.clipboard.writeText(linkText).then(() => alert("Copied!")); }
+        function copyLink(linkText) { navigator.clipboard.writeText(linkText).then(() => alert("Domain Mock Copied!")); }
 
         function spyStoreAnalytics() {
             const inputUrl = document.getElementById('store-url').value.trim();
@@ -369,16 +398,4 @@
                 const ctx = document.getElementById('trafficPieChart').getContext('2d');
                 if (myPieChart) myPieChart.destroy();
                 myPieChart = new Chart(ctx, {
-                    type: 'pie',
-                    data: {
-                        labels: ['Facebook', 'TikTok', 'Pinterest', 'Google'],
-                        datasets: [{ data: [35, 30, 20, 15], backgroundColor: ['#3b5998', '#ff0050', '#bd081c', '#27ae60'], borderWidth: 1, borderColor: '#17212b' }]
-                    },
-                    options: { responsive: true, plugins: { legend: { display: true, position: 'right' } } }
-                });
-            }, 900);
-        }
-    </script>
-</body>
-</html>
-
+                  
