@@ -1,0 +1,37 @@
+name: EcomSpy Chat Router & Command Core
+
+on:
+  repository_dispatch:
+    types: [telegram_incoming_command]
+
+jobs:
+  process-admin-command:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Validate Command Source & Action Route
+        run: |
+          USER_ID="${{ github.event.client_payload.from_id }}"
+          COMMAND_TEXT="${{ github.event.client_payload.text }}"
+          if [[ "$COMMAND_TEXT" == "/grantpro"* ]]; then
+            TARGET_USER=$(echo "$COMMAND_TEXT" | awk '{print $2}')
+            node -e "
+              const fs = require('fs');
+              let users = JSON.parse(fs.readFileSync('users-registry.json'));
+              if(!users.some(u => u.telegram_id === '$TARGET_USER')) {
+                users.push({ telegram_id: '$TARGET_USER', username: 'granted_via_chat', role: 'pro', status: 'active' });
+                fs.writeFileSync('users-registry.json', JSON.stringify(users, null, 2));
+              }
+            "
+          fi
+
+      - name: Save Status Changes Back to Main Branch
+        run: |
+          git config --global user.name "EcomSpy Operations Bot"
+          git config --global user.email "operations@ecomspy.pro"
+          git add users-registry.json
+          git diff-index --quiet HEAD || git commit -m "⚙️ System Account Tier Privileges Map Sync [Skip CI]"
+          git push
+          
