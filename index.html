@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ecom Spy SaaS Dashboard</title>
+    <title>EcomSpy Pro Ultimate SaaS</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- ChartJS Injector for Pie Chart -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -15,6 +14,8 @@
             text-align: center;
             padding: 12px;
             margin: 0;
+            position: relative;
+            min-height: 98vh;
         }
         .header h2 {
             font-size: 20px;
@@ -34,12 +35,12 @@
             background: transparent;
             color: #7f97ab;
             border: none;
-            padding: 8px 16px;
-            font-size: 13px;
+            padding: 8px 6px;
+            font-size: 11px;
             font-weight: 600;
             cursor: pointer;
             border-radius: 20px;
-            width: 50%;
+            width: 33.33%;
         }
         .tab-btn.active {
             background: #2481cc;
@@ -81,16 +82,122 @@
             cursor: pointer;
             font-size: 14px;
         }
+        
+        /* Premium Lock */
+        #premium-lock-screen {
+            display: none;
+            background: rgba(14, 22, 33, 0.97);
+            position: absolute;
+            top: 55px; left: 0; right: 0; bottom: 0;
+            z-index: 9999;
+            padding: 30px 15px;
+        }
+        .lock-box {
+            background: #17212b;
+            border: 1px solid #e67e22;
+            border-radius: 16px;
+            padding: 25px 15px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+        }
+        .btn-unlock {
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+            color: #0e1621;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 800;
+            font-size: 14px;
+            cursor: pointer;
+            width: 90%;
+            margin-top: 15px;
+        }
+
+        /* SaaS Data Cards Layout */
+        .ad-card {
+            background: #17212b;
+            border-radius: 10px;
+            padding: 12px;
+            margin: 12px 0;
+            text-align: left;
+            border: 1px solid #242f3d;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .ad-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .ad-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .ad-body-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .ad-metrics {
+            font-size: 12px;
+            color: #a2b6c7;
+            line-height: 1.5;
+        }
+        
+        .ai-writer-box {
+            background: #0e1621;
+            border: 1px dashed #2481cc;
+            border-radius: 6px;
+            padding: 8px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #52b1ff;
+            display: none;
+        }
+        
+        .ad-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            border-top: 1px solid #242f3d;
+            padding-top: 8px;
+            gap: 5px;
+        }
+        .btn-action-small {
+            background: #242f3d;
+            color: #52b1ff;
+            border: 1px solid #2b394a;
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .btn-ai-spark {
+            background: #27ae60;
+            color: white;
+            border: none;
+        }
+        .tag-small {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+            color: white;
+        }
+
+        /* Analytics Panels */
         .analytics-card {
             background: #17212b;
             border-radius: 12px;
             padding: 15px;
             text-align: left;
             border: 1px solid #2b394a;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
         .analytics-title {
-            font-size: 15px;
+            font-size: 14px;
             color: #8da4b9;
             border-bottom: 1px solid #242f3d;
             padding-bottom: 6px;
@@ -124,83 +231,57 @@
             display: flex;
             justify-content: center;
         }
-        .ad-card {
-            background: #17212b;
-            border-radius: 10px;
-            padding: 10px 12px;
-            margin: 10px 0;
-            text-align: left;
-            border: 1px solid #242f3d;
-        }
-        .ad-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .ad-title {
-            font-size: 14px;
-            font-weight: bold;
-            color: #ffffff;
-        }
-        .ad-metrics {
-            font-size: 12px;
-            color: #7f97ab;
-            margin: 4px 0;
-        }
-        .ad-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 6px;
-            border-top: 1px solid #242f3d;
-            padding-top: 6px;
-        }
-        .btn-action-small {
-            background: #242f3d;
-            color: #52b1ff;
-            border: 1px solid #2b394a;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            cursor: pointer;
-            text-decoration: none;
-        }
-        .tag-small {
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 10px;
-            font-weight: bold;
-            color: white;
-        }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h2>🕵️‍♂️ EcomSpy Pro Engine</h2>
+        <h2>🕵️‍♂️ EcomSpy Pro SaaS</h2>
     </div>
 
     <div class="tabs-container">
         <button class="tab-btn active" onclick="switchTab('store-spy-tab', this)">🏪 Store Spy</button>
-        <button class="tab-btn" onclick="switchTab('viral-ads-tab', this)">📺 Viral Ads (10D)</button>
+        <button class="tab-btn" onclick="switchTab('viral-ads-tab', this)">📺 Viral Ads AI</button>
+        <button class="tab-btn" onclick="switchTab('pinterest-tab', this)">📌 Pinterest Trends</button>
     </div>
 
-    <!-- TAB 1: STORE SPY WITH GRAPH -->
+    <!-- LOCK SCREEN OVERLAY -->
+    <div id="premium-lock-screen">
+        <div class="lock-box">
+            <h3 style="color:#f1c40f; margin-top:0;">🌟 PRO ACCESS REQUIRED 🌟</h3>
+            <p style="font-size:13px; color:#a2b6c7; line-height:1.5;">
+                Unlock dynamic filters, complete real-time ads indices database, Pinterest Hot Search Trends & automated AI ad creative copywriter engine.
+            </p>
+            <div style="font-size:17px; font-weight:bold; color:white; margin:12px 0;">💎 Price: 50 Telegram Stars</div>
+            <button class="btn-unlock" onclick="triggerStarsPayment()">⚡ Checkout with Telegram Stars</button>
+        </div>
+    </div>
+
+    <!-- TAB 1: STORE SPY -->
     <div id="store-spy-tab" class="tab-content active">
         <div class="search-box">
             <input type="text" id="store-url" placeholder="Paste Shopify URL here...">
             <button class="btn-spy" onclick="spyStoreAnalytics()">⚡ Deep Analyze Ecosystem</button>
         </div>
         <div id="spy-results">
-            <p style="text-align:center; color:#7f97ab; font-size: 13px;">Paste a store link or copy one from the Viral Ads section.</p>
+            <p style="text-align:center; color:#7f97ab; font-size: 13px;">Free Mode: Enter any domain to parse standard metrics.</p>
         </div>
     </div>
 
     <!-- TAB 2: VIRAL ADS -->
     <div id="viral-ads-tab" class="tab-content">
-        <div id="dynamic-ads-container">
-            <p style="font-size:13px; color:#7f97ab;">Parsing last 10 days ad matrix...</p>
+        <div class="search-box" style="border-color: #2481cc;">
+            <input type="text" id="ads-search-input" onkeyup="searchAdsEngine()" placeholder="🔍 Search FB / TikTok ads cluster...">
         </div>
+        <div id="dynamic-ads-container"></div>
+    </div>
+
+    <!-- TAB 3: PINTEREST TRENDS -->
+    <div id="pinterest-tab" class="tab-content">
+        <div class="search-box" style="border-color: #bd081c;">
+            <input type="text" id="pin-search-input" onkeyup="searchPinterestEngine()" placeholder="📌 Search Pinterest viral trends & keywords...">
+        </div>
+        <div id="pinterest-container"></div>
     </div>
 
     <script>
@@ -208,143 +289,141 @@
         tg.ready();
         tg.expand();
 
+        let isPremiumUser = false; // System lock trigger gate
         let adsDataGlobal = [];
-        let myPieChart = null; // Global chart reference
+        let myPieChart = null; 
+
+        async function prefetchWarehouseData() {
+            try {
+                const response = await fetch('ads-data.json?v=' + new Date().getTime());
+                adsDataGlobal = await response.json();
+                renderGrid('dynamic-ads-container', adsDataGlobal.filter(a => !a.platform.includes("Pinterest")), "ads");
+                renderGrid('pinterest-container', adsDataGlobal.filter(a => a.platform.includes("Pinterest")), "pin");
+            } catch (error) { console.log("Database sync failed."); }
+        }
+        prefetchWarehouseData();
 
         function switchTab(tabId, buttonElement) {
+            if((tabId === 'viral-ads-tab' || tabId === 'pinterest-tab') && !isPremiumUser) {
+                document.getElementById('premium-lock-screen').style.display = 'block';
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                buttonElement.classList.add('active');
+                return;
+            }
+            document.getElementById('premium-lock-screen').style.display = 'none';
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             buttonElement.classList.add('active');
-            
-            if(tabId === 'viral-ads-tab') {
-                loadLiveAds();
-            }
         }
 
-        async function loadLiveAds() {
-            const container = document.getElementById('dynamic-ads-container');
-            try {
-                const response = await fetch('ads-data.json');
-                adsDataGlobal = await response.json();
-                container.innerHTML = ''; 
-                
-                adsDataGlobal.forEach((ad) => {
-                    const card = document.createElement('div');
-                    card.className = 'ad-card';
-                    card.style.borderLeft = `4px solid ${ad.color}`;
-                    
-                    card.innerHTML = `
-                        <div class="ad-top">
-                            <span class="ad-title">${ad.title}</span>
-                            <span class="tag-small" style="background:${ad.color};">${ad.tag}</span>
-                        </div>
-                        <div class="ad-metrics">
-                            ⚡ ${ad.platform} • 📊 ${ad.engagement}
-                        </div>
-                        <div class="ad-actions">
-                            <button class="btn-action-small" onclick="copyLink('${ad.store}')">📋 Copy Store Link</button>
-                            <a href="${ad.link}" target="_blank" class="btn-action-small">📺 View Ad</a>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-            } catch (error) {
-                container.innerHTML = '<p style="color:#e74c3c;">Matrix connection issue.</p>';
+        function triggerStarsPayment() {
+            tg.sendData(JSON.stringify({action: "request_premium_invoice", tokens: 50}));
+            alert("🚀 Secure billing transaction invoice routed to your chat thread.");
+        }
+
+        function renderGrid(containerId, dataArray, typeCode) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = ''; 
+            if(dataArray.length === 0) {
+                container.innerHTML = '<p style="font-size:12px; color:#e74c3c;">❌ No items found matching queries.</p>';
+                return;
             }
+            dataArray.forEach((ad, idx) => {
+                const card = document.createElement('div');
+                card.className = 'ad-card';
+                card.style.borderLeft = `4px solid ${ad.color}`;
+                let idString = `${typeCode}-ai-${idx}`;
+                
+                let metricsHtml = '';
+                if(ad.platform.includes("Pinterest")) {
+                    metricsHtml = `
+                        📈 <strong>Search Trend:</strong> ${ad.trend_growth}<br>
+                        📊 <strong>Search Volume:</strong> ${ad.engagement}<br>
+                        🏷️ <strong>Trending Keywords:</strong> <span style="color:#f1c40f;">${ad.related_keywords}</span>
+                    `;
+                } else {
+                    metricsHtml = `
+                        📢 <strong>Source Feed:</strong> ${ad.platform}<br>
+                        📊 <strong>Performance:</strong> ${ad.engagement}<br>
+                        💰 <strong>Target Margin:</strong> ${ad.roas}
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="ad-top"><span class="ad-title">${ad.title}</span><span class="tag-small" style="background:${ad.color};">${ad.tag}</span></div>
+                    <div class="ad-body-wrapper">
+                        <div class="ad-metrics">${metricsHtml}</div>
+                    </div>
+                    <div class="ai-writer-box" id="${idString}">🤖 **AI AD COPY:**\n👉 "Tired of regular gadgets? This viral ${ad.title} is taking over! 🚀 Get 50% OFF + Free Shipping Today only! Link in Bio."</div>
+                    <div class="ad-actions">
+                        <button class="btn-action-small" onclick="copyLink('${ad.store}')">📋 Copy Domain</button>
+                        <button class="btn-action-small btn-ai-spark" onclick="toggleAiWriter('${idString}')">🪄 AI Copywriter</button>
+                        <a href="${ad.link}" target="_blank" class="btn-action-small">📺 View Source</a>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function toggleAiWriter(boxId) {
+            const el = document.getElementById(boxId);
+            el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+        }
+
+        function searchAdsEngine() {
+            const query = document.getElementById('ads-search-input').value.toLowerCase().trim();
+            let matched = adsDataGlobal.filter(a => !a.platform.includes("Pinterest") && (a.title.toLowerCase().includes(query) || a.keywords.some(k => k.includes(query))));
+            renderGrid('dynamic-ads-container', matched, "ads");
+        }
+
+        function searchPinterestEngine() {
+            const query = document.getElementById('pin-search-input').value.toLowerCase().trim();
+            let matched = adsDataGlobal.filter(a => a.platform.includes("Pinterest") && (a.title.toLowerCase().includes(query) || a.keywords.some(k => k.includes(query))));
+            renderGrid('pinterest-container', matched, "pin");
         }
 
         function copyLink(linkText) {
-            navigator.clipboard.writeText(linkText).then(() => {
-                alert("Store Link Copied! Go paste inside Store Spy.");
-            }).catch(() => {
-                const el = document.createElement('textarea');
-                el.value = linkText;
-                document.body.appendChild(el);
-                el.select();
-                document.execCommand('copy');
-                document.body.removeChild(el);
-                alert("Store Link Copied!");
-            });
+            navigator.clipboard.writeText(linkText).then(() => alert("Domain Copied! Paste inside 'Store Spy'."));
         }
 
         function spyStoreAnalytics() {
             const inputUrl = document.getElementById('store-url').value.trim();
             const resultsContainer = document.getElementById('spy-results');
-            
-            if(!inputUrl) {
-                alert("Please paste a store link first!");
-                return;
-            }
+            if(!inputUrl) return alert("Please enter domain first!");
 
-            resultsContainer.innerHTML = '<p style="font-size:13px; color:#52b1ff;">🛰️ Extracting Traffic Distribution Graphs...</p>';
-
+            resultsContainer.innerHTML = '<p style="font-size:12px; color:#2481cc;">Uplinking datacenter nodes...</p>';
             let matchedAd = adsDataGlobal.find(ad => inputUrl.includes(ad.store) || ad.store.includes(inputUrl));
             
-            let traffic = matchedAd ? matchedAd.traffic : "22,400 visitors / mo";
-            let topProduct = matchedAd ? matchedAd.hero : "Transparent Waterproof Nano Tape";
-            let status = matchedAd ? matchedAd.profit : "Highly Profitable (2.8x ROAS)";
-
-            // Dynamic Chart percentages mapping based on store type
-            let fbPct = matchedAd ? (matchedAd.platform.includes("Facebook") ? 60 : 25) : 40;
-            let tkPct = matchedAd ? (matchedAd.platform.includes("TikTok") ? 65 : 20) : 35;
-            let GooglePct = 100 - (fbPct + tkPct);
+            let traffic = matchedAd ? matchedAd.engagement.split('|')[0].trim() : (Math.floor(Math.random() * 45) + 15) + "K monthly views";
+            let topProduct = matchedAd ? matchedAd.title.replace(/[^\w\s]/gi, '') : "Trending High Margin Niche Pod";
+            let status = matchedAd ? matchedAd.tag : "Verified Scalable (2.6x ROAS)";
 
             setTimeout(() => {
                 resultsContainer.innerHTML = `
                     <div class="analytics-card">
-                        <div class="analytics-title">🌐 ANALYSIS NODE: ${inputUrl.replace('https://','').replace('http://','')}</div>
-                        
-                        <div class="metric-row">
-                            <span>📈 Total Traffic Volume:</span>
-                            <span class="metric-val">${traffic}</span>
-                        </div>
-                        
-                        <div class="metric-row">
-                            <span>🏆 Hero Product (Sales):</span>
-                            <span class="metric-val" style="color:#e67e22;">${topProduct}</span>
-                        </div>
-                        
-                        <div class="metric-row">
-                            <span>💰 Valuation Margin:</span>
-                            <span class="badge-profit">${status}</span>
-                        </div>
-
-                        <div style="font-size:12px; color:#8da4b9; margin-top:15px; font-weight:bold;">📊 Ad Channels Share %</div>
-                        <div class="chart-box">
-                            <canvas id="trafficPieChart"></canvas>
-                        </div>
+                        <div class="analytics-title">🌐 TARGET MATRIX: ${inputUrl}</div>
+                        <div class="metric-row"><span>📈 Total Reach Volume:</span><span class="metric-val">${traffic}</span></div>
+                        <div class="metric-row"><span>🏆 Highest Converting Item:</span><span class="metric-val" style="color:#e67e22;">${topProduct}</span></div>
+                        <div class="metric-row"><span>💰 Traffic Valuation Index:</span><span class="badge-profit" style="background:#2481cc;">${status}</span></div>
+                        <div style="font-size:11px; color:#8da4b9; margin-top:12px; font-weight:bold;">📊 Multi-Channel Traffic Share %</div>
+                        <div class="chart-box"><canvas id="trafficPieChart"></canvas></div>
                     </div>
                 `;
-
-                // Render matching Chart context
                 const ctx = document.getElementById('trafficPieChart').getContext('2d');
-                if (myPieChart) myPieChart.destroy(); // Clear old instance
-                
+                if (myPieChart) myPieChart.destroy();
                 myPieChart = new Chart(ctx, {
                     type: 'pie',
                     data: {
-                        labels: ['Facebook Ads', 'TikTok Ads', 'Google Search'],
-                        datasets: [{
-                            data: [fbPct, tkPct, GooglePct],
-                            backgroundColor: ['#3b5998', '#ff0050', '#27ae60'],
-                            borderWidth: 1,
-                            borderColor: '#17212b'
-                        }]
+                        labels: ['Facebook Ads', 'TikTok Ads', 'Pinterest Feed', 'Google Search'],
+                        datasets: [{ data: [35, 30, 20, 15], backgroundColor: ['#3b5998', '#ff0050', '#bd081c', '#27ae60'], borderWidth: 1, borderColor: '#17212b' }]
                     },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                labels: { color: '#b1c7dc', font: { size: 10 } },
-                                position: 'right'
-                            }
-                        }
-                    }
+                    options: { responsive: true, plugins: { legend: { labels: { color: '#b1c7dc', font: { size: 9 } }, position: 'right' } } }
                 });
-
-            }, 1000);
+            }, 900);
         }
     </script>
 </body>
 </html>
+
