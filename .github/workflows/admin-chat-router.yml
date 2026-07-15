@@ -1,37 +1,84 @@
-name: EcomSpy Chat Router & Command Core
+name: EcomSpy Multi-User Operations Hub
 
 on:
   repository_dispatch:
     types: [telegram_incoming_command]
 
 jobs:
-  process-admin-command:
+  process-action:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Validate Command Source & Action Route
+      - name: Dynamic Multi-User Handler
         run: |
-          USER_ID="${{ github.event.client_payload.from_id }}"
+          SENDER_ID="${{ github.event.client_payload.from_id }}"
+          SENDER_NAME="${{ github.event.client_payload.from_username }}"
           COMMAND_TEXT="${{ github.event.client_payload.text }}"
-          if [[ "$COMMAND_TEXT" == "/grantpro"* ]]; then
-            TARGET_USER=$(echo "$COMMAND_TEXT" | awk '{print $2}')
-            node -e "
-              const fs = require('fs');
-              let users = JSON.parse(fs.readFileSync('users-registry.json'));
-              if(!users.some(u => u.telegram_id === '$TARGET_USER')) {
-                users.push({ telegram_id: '$TARGET_USER', username: 'granted_via_chat', role: 'pro', status: 'active' });
+
+          echo "👤 Command triggered by ID: $SENDER_ID (@$SENDER_NAME)"
+          echo "💬 Command: $COMMAND_TEXT"
+
+          # 1. AUTO REGISTRATION FOR EVERY NEW USER (FREEMIUM ENROLMENT)
+          node -e "
+            const fs = require('fs');
+            let users = fs.existsSync('users-registry.json') ? JSON.parse(fs.readFileSync('users-registry.json')) : [];
+            if(!users.some(u => String(u.telegram_id) === String('$SENDER_ID'))) {
+              users.push({
+                telegram_id: String('$SENDER_ID'),
+                username: '$SENDER_NAME' || 'anonymous',
+                role: 'free',
+                status: 'active'
+              });
+              fs.writeFileSync('users-registry.json', JSON.stringify(users, null, 2));
+              console.log('✅ Registered new user in global database.');
+            }
+          "
+
+          # 2. ADMIN COMMANDS CONTROL
+          # Only executes if sender is Master Admin
+          if [ "$SENDER_ID" = "1287722882" ]; then
+            
+            # Action A: Grant Premium (/grantpro [ID])
+            if [[ "$COMMAND_TEXT" == "/grantpro"* ]]; then
+              TARGET_USER=$(echo "$COMMAND_TEXT" | awk '{print $2}')
+              node -e "
+                const fs = require('fs');
+                let users = JSON.parse(fs.readFileSync('users-registry.json'));
+                let uIndex = users.findIndex(u => String(u.telegram_id) === String('$TARGET_USER'));
+                if(uIndex !== -1) {
+                  users[uIndex].role = 'pro';
+                } else {
+                  users.push({ telegram_id: String('$TARGET_USER'), username: 'granted_pro', role: 'pro', status: 'active' });
+                }
                 fs.writeFileSync('users-registry.json', JSON.stringify(users, null, 2));
-              }
-            "
+                console.log('💎 Level upgraded to PRO.');
+              "
+            fi
+
+            # Action B: Revoke Premium (/revokepro [ID])
+            if [[ "$COMMAND_TEXT" == "/revokepro"* ]]; then
+              TARGET_USER=$(echo "$COMMAND_TEXT" | awk '{print $2}')
+              node -e "
+                const fs = require('fs');
+                let users = JSON.parse(fs.readFileSync('users-registry.json'));
+                let uIndex = users.findIndex(u => String(u.telegram_id) === String('$TARGET_USER'));
+                if(uIndex !== -1) {
+                  users[uIndex].role = 'free';
+                  fs.writeFileSync('users-registry.json', JSON.stringify(users, null, 2));
+                  console.log('❌ Level reverted to Free.');
+                }
+              "
+            fi
+
           fi
 
-      - name: Save Status Changes Back to Main Branch
+      - name: Deploy Changes
         run: |
-          git config --global user.name "EcomSpy Operations Bot"
-          git config --global user.email "operations@ecomspy.pro"
+          git config --global user.name "EcomSpy Core"
+          git config --global user.email "core@ecomspy.pro"
           git add users-registry.json
-          git diff-index --quiet HEAD || git commit -m "⚙️ System Account Tier Privileges Map Sync [Skip CI]"
+          git diff-index --quiet HEAD || git commit -m "👥 User State Sync Event [Skip CI]"
           git push
           
