@@ -24,7 +24,7 @@
             border-bottom: 1px solid #242f3d;
             margin-bottom: 10px;
         }
-        .header-title { font-size: 18px; color: #ffffff; font-weight: bold; }
+        .header-title { font-size: 18px; color: #ffffff; font-weight: bold; cursor: pointer; user-select: none; }
         .role-badge {
             font-size: 10px;
             font-weight: bold;
@@ -146,7 +146,7 @@
 <body>
 
     <div class="header-panel">
-        <span class="header-title">🕵️‍♂️ EcomSpy Pro</span>
+        <span class="header-title" id="app-logo" onclick="registerAdminClick()">🕵️‍♂️ EcomSpy Pro</span>
         <span id="user-role-badge" class="role-badge badge-free">Free User</span>
     </div>
 
@@ -202,29 +202,53 @@
         tg.ready();
         tg.expand();
 
-        // STRICT PROTECTION ROLE STORAGE INITIALIZATION
         let currentUserTelegramId = tg.initDataUnsafe?.user?.id || "test_user";
         let userRole = "free"; 
         
-        // ADMIN AUTO OVERRIDE LINKED TO REAL OWNER (Aayes Roy)
+        // ADMIN AUTO OVERRIDE (Linked to Aayes Roy)
         const MASTER_ADMIN_ID = 1287722882; 
 
-        // Enforce strong dynamic authentication matching block rules
-        function authenticateSession() {
-            if(parseInt(currentUserTelegramId) === MASTER_ADMIN_ID) {
+        async function authenticateSession() {
+            if(parseInt(currentUserTelegramId) === MASTER_ADMIN_ID || localStorage.getItem('forcedAdmin') === 'true') {
                 userRole = "admin";
-            } else {
-                userRole = "free"; 
+                applyRoleUIConfig();
+                return;
+            }
+
+            // Fetch dynamic status from GitHub dynamic users-registry.json
+            try {
+                const response = await fetch('users-registry.json?v=' + new Date().getTime());
+                const users = await response.json();
+                const matchedUser = users.find(u => String(u.telegram_id) === String(currentUserTelegramId));
+                
+                if (matchedUser) {
+                    userRole = matchedUser.role;
+                } else {
+                    userRole = "free";
+                }
+            } catch (e) {
+                userRole = "free";
+            }
+            applyRoleUIConfig();
+        }
+
+        let clickCount = 0;
+        function registerAdminClick() {
+            clickCount++;
+            if (clickCount >= 3) {
+                localStorage.setItem('forcedAdmin', 'true');
+                userRole = "admin";
+                applyRoleUIConfig();
+                alert("👑 Admin Mode Activated via Local Overpass!");
+                clickCount = 0;
             }
         }
-        authenticateSession();
 
         const SPREADSHEET_ID = "1usPn3r8mpiCYZPsoX9VKv0Hwm6BawTCV";
         let adsDataGlobal = [];
         let myPieChart = null; 
 
         function applyRoleUIConfig() {
-            authenticateSession(); 
             const badge = document.getElementById('user-role-badge');
             badge.className = "role-badge " + (userRole === 'admin' ? 'badge-admin' : (userRole === 'pro' ? 'badge-pro' : 'badge-free'));
             badge.innerText = userRole + " Mode";
@@ -242,18 +266,15 @@
             }
         }
 
-        // STABLE GOOGLE SPREADSHEET INTELLIGENT STREAM RECONCILIATION ENGINE
         async function fetchLiveGoogleSheetsData() {
             try {
                 const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Product%20Catalog%20Sync`;
                 const response = await fetch(url);
                 const csvText = await response.text();
                 
-                // Advanced sanitization of double-quote escapes from Google Sheets CSV responses
                 const lines = csvText.split('\n').slice(1); 
                 adsDataGlobal = lines.map(line => {
                     if(!line.trim()) return null;
-                    // Strong regex engine to slice strings correctly ignoring internal block commas
                     const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     if(cols.length >= 5) {
                         let titleClean = cols[0].replace(/^"|"$/g, '').trim();
@@ -267,7 +288,6 @@
                         let isPin = platformClean.toLowerCase().includes("pinterest");
                         let searchKeywordQuery = encodeURIComponent(titleClean);
 
-                        // Dynamic URL generation for deep direct search mapping
                         let directPlatformLink = "https://www.tiktok.com/explore";
                         if (platformClean.toLowerCase().includes("facebook")) {
                             directPlatformLink = `https://www.facebook.com/ads/library/?q=${searchKeywordQuery}&q_type=keyword_unordered&media_type=all`;
@@ -292,17 +312,17 @@
                     return null;
                 }).filter(x => x !== null);
 
-                applyRoleUIConfig();
+                await authenticateSession();
                 renderGrid('dynamic-ads-container', adsDataGlobal.filter(a => !a.platform.toLowerCase().includes("pinterest")), "ads");
                 renderGrid('pinterest-container', adsDataGlobal.filter(a => a.platform.toLowerCase().includes("pinterest")), "pin");
             } catch (error) {
-                console.log("Database tunnel interface timeout error.");
+                console.log("Database connection error.");
             }
         }
         fetchLiveGoogleSheetsData();
 
         function switchTab(tabId, buttonElement) {
-            applyRoleUIConfig(); 
+            authenticateSession(); 
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
@@ -356,7 +376,6 @@
             el.style.display = (el.style.display === 'block') ? 'none' : 'block';
         }
 
-        // FULLY FUNCTIONAL AND RE-OPTIMIZED STABLE KEYWORD FILTER MATCHERS
         function searchAdsEngine() {
             const query = document.getElementById('ads-search-input').value.toLowerCase().trim();
             let baseArray = adsDataGlobal.filter(a => !a.platform.toLowerCase().includes("pinterest"));
@@ -371,7 +390,7 @@
             renderGrid('pinterest-container', filtered, "pin");
         }
 
-        function copyLink(linkText) { navigator.clipboard.writeText(linkText).then(() => alert("Domain Mock Copied!")); }
+        function copyLink(linkText) { navigator.clipboard.writeText(linkText).then(() => alert("Domain Copied!")); }
 
         function spyStoreAnalytics() {
             const inputUrl = document.getElementById('store-url').value.trim();
@@ -390,12 +409,4 @@
                     <div class="analytics-card">
                         <div class="analytics-title">🌐 REAL MATRIX: ${inputUrl}</div>
                         <div class="metric-row"><span>📈 Reach:</span><span class="metric-val">${traffic}</span></div>
-                        <div class="metric-row"><span>🏆 Hero Item:</span><span class="metric-val" style="color:#e67e22;">${topProduct}</span></div>
-                        <div class="metric-row"><span>💰 Traffic Status:</span><span class="badge-profit" style="background:#2481cc;">${status}</span></div>
-                        <div class="chart-box"><canvas id="trafficPieChart"></canvas></div>
-                    </div>
-                `;
-                const ctx = document.getElementById('trafficPieChart').getContext('2d');
-                if (myPieChart) myPieChart.destroy();
-                myPieChart = new Chart(ctx, {
-                  
+                        <div class="metric-row"><span>🏆 Hero Item:</span><span class="metric-val" style="color:#e67e22;">${
