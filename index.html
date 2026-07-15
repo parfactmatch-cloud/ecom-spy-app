@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EcomSpy Pro - Freemium Engine</title>
+    <title>EcomSpy Pro - Enterprise Live Engine</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -55,10 +55,7 @@
             border-radius: 20px;
             width: 33.33%;
         }
-        .tab-btn.active {
-            background: #2481cc;
-            color: white;
-        }
+        .tab-btn.active { background: #2481cc; color: white; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
@@ -91,7 +88,6 @@
             cursor: pointer;
         }
         
-        /* Freemium Blurred Locked UI Card Pattern */
         .premium-locked-blur {
             position: relative;
             filter: blur(4px);
@@ -139,7 +135,6 @@
         .btn-ai-spark { background: #27ae60; color: white; border: none; }
         .tag-small { padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: bold; color: white; }
 
-        /* Analytics Panels */
         .analytics-card { background: #17212b; border-radius: 12px; padding: 15px; text-align: left; border: 1px solid #2b394a; }
         .analytics-title { font-size: 14px; color: #8da4b9; border-bottom: 1px solid #242f3d; padding-bottom: 6px; margin-bottom: 10px; font-weight: bold; }
         .metric-row { display: flex; justify-content: space-between; margin: 6px 0; font-size: 13px; }
@@ -161,7 +156,7 @@
         <button class="tab-btn" onclick="switchTab('pinterest-tab', this)">📌 Pinterest Trends</button>
     </div>
 
-    <!-- TAB 1: STORE SPY (FREE MODULE) -->
+    <!-- TAB 1: STORE SPY -->
     <div id="store-spy-tab" class="tab-content active">
         <div class="search-box">
             <input type="text" id="store-url" placeholder="Paste Shopify URL here...">
@@ -172,7 +167,7 @@
         </div>
     </div>
 
-    <!-- TAB 2: VIRAL ADS (FREEMIUM PROTECTED) -->
+    <!-- TAB 2: VIRAL ADS -->
     <div id="viral-ads-tab" class="tab-content">
         <div class="search-box" style="border-color: #2481cc;">
             <input type="text" id="ads-search-input" onkeyup="searchAdsEngine()" placeholder="🔍 Search FB / TikTok ads cluster...">
@@ -187,7 +182,7 @@
         </div>
     </div>
 
-    <!-- TAB 3: PINTEREST TRENDS (FREEMIUM PROTECTED) -->
+    <!-- TAB 3: PINTEREST TRENDS -->
     <div id="pinterest-tab" class="tab-content">
         <div class="search-box" style="border-color: #bd081c;">
             <input type="text" id="pin-search-input" onkeyup="searchPinterestEngine()" placeholder="📌 Search Pinterest viral trends & keywords...">
@@ -207,18 +202,19 @@
         tg.ready();
         tg.expand();
 
-        // PARSE USER ID AND CONFIG FOR PRIVILEGES ROLE ASSIGNMENTS
         let currentUserTelegramId = tg.initDataUnsafe?.user?.id || "test_user";
-        let userRole = "free"; // Default role initialization fallback matrix
+        let userRole = "free"; 
         
-        // ADMIN HARDCODED PROFILE IDENTIFICATION BYPASSER LOCK HOOK
-        // REPLACE WITH YOUR REAL TELEGRAM NUMBER ID
+        // ADMIN AUTO OVERRIDE LOCK HOOK
         const MASTER_ADMIN_ID = 123456789; 
 
         if(parseInt(currentUserTelegramId) === MASTER_ADMIN_ID) {
             userRole = "admin";
         }
 
+        // AUTO INTEGRATED TARGET SHEET ID MATRIX
+        const SPREADSHEET_ID = "1usPn3r8mpiCYZPsoX9VKv0Hwm6BawTCV";
+        
         let adsDataGlobal = [];
         let myPieChart = null; 
 
@@ -227,7 +223,6 @@
             badge.className = "role-badge " + (userRole === 'admin' ? 'badge-admin' : (userRole === 'pro' ? 'badge-pro' : 'badge-free'));
             badge.innerText = userRole + " Mode";
 
-            // If user has free restriction profiles, lock premium overlays
             if(userRole === 'free') {
                 document.getElementById('premium-lock-ads').style.display = 'flex';
                 document.getElementById('premium-lock-pin').style.display = 'flex';
@@ -241,19 +236,50 @@
             }
         }
 
-        async function prefetchWarehouseData() {
+        // GOOGLE SHEETS DYNAMIC STREAM READ ENGINE
+        async function fetchLiveGoogleSheetsData() {
             try {
-                const response = await fetch('ads-data.json?v=' + new Date().getTime());
-                adsDataGlobal = await response.json();
+                // Pointing to sheet 3 'Product Catalog Sync' tab explicitly
+                const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Product%20Catalog%20Sync`;
+                const response = await fetch(url);
+                const csvText = await response.text();
                 
-                // Fetch user specific payment role database lookup configuration mapping logic if needed
+                const rows = csvText.split('\n').slice(1); 
+                adsDataGlobal = rows.map(row => {
+                    const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if(cols.length >= 5) {
+                        let titleClean = cols[0].replace(/"/g, '');
+                        let platformClean = cols[1].replace(/"/g, '');
+                        let engagementClean = cols[2].replace(/"/g, '');
+                        let tagClean = cols[3].replace(/"/g, '');
+                        let roasClean = cols[4].replace(/"/g, '').trim() + "x ROAS";
+                        
+                        let isPin = platformClean.includes("Pinterest");
+                        return {
+                            title: titleClean,
+                            platform: platformClean,
+                            engagement: isPin ? titleClean + " Search Volume" : engagementClean,
+                            tag: tagClean,
+                            roas: roasClean,
+                            color: isPin ? "#bd081c" : (platformClean.includes("TikTok") ? "#ff0050" : "#3b5998"),
+                            store: "live-analyzed-node.com",
+                            link: isPin ? "https://trends.pinterest.com" : "https://facebook.com/ads/library",
+                            trend_growth: isPin ? "🚀 Surge: " + tagClean : "",
+                            related_keywords: isPin ? "#trending, #viralniche" : "",
+                            keywords: [titleClean.toLowerCase()]
+                        };
+                    }
+                    return null;
+                }).filter(x => x !== null);
+
                 applyRoleUIConfig();
-                
                 renderGrid('dynamic-ads-container', adsDataGlobal.filter(a => !a.platform.includes("Pinterest")), "ads");
                 renderGrid('pinterest-container', adsDataGlobal.filter(a => a.platform.includes("Pinterest")), "pin");
-            } catch (error) { console.log("Database fetch mismatch."); }
+            } catch (error) {
+                console.log("Sheets dynamic integration link exception.");
+            }
         }
-        prefetchWarehouseData();
+        fetchLiveGoogleSheetsData();
 
         function switchTab(tabId, buttonElement) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -263,9 +289,8 @@
         }
 
         function sendPurchaseIntentToChat() {
-            // Signal sent back down securely into bot conversation feed interface without leaving window frame
             tg.sendData(JSON.stringify({action: "checkout_stars_intent", uid: currentUserTelegramId}));
-            tg.close(); // Closes screen framework context smoothly reverting to chat dashboard panel
+            tg.close();
         }
 
         function renderGrid(containerId, dataArray, typeCode) {
@@ -302,7 +327,7 @@
         }
 
         function toggleAiWriter(boxId) {
-            if(userRole === 'free') return alert("Feature locked in free tiers.");
+            if(userRole === 'free') return alert("Premium activation configurations mapping rule constraint.");
             const el = document.getElementById(boxId);
             el.style.display = (el.style.display === 'block') ? 'none' : 'block';
         }
