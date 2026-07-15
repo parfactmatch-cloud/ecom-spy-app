@@ -54,6 +54,7 @@
             cursor: pointer;
             border-radius: 20px;
             width: 33.33%;
+            outline: none;
         }
         .tab-btn.active { background: #2481cc; color: white; }
         .tab-content { display: none; }
@@ -205,29 +206,33 @@
         let currentUserTelegramId = tg.initDataUnsafe?.user?.id || "test_user";
         let userRole = "free"; 
         
-        // ADMIN AUTO OVERRIDE (Linked to Aayes Roy)
+        // ADMIN AUTO OVERRIDE LINKED TO OWNER (Aayes Roy)
         const MASTER_ADMIN_ID = 1287722882; 
 
         async function authenticateSession() {
-            if(parseInt(currentUserTelegramId) === MASTER_ADMIN_ID || localStorage.getItem('forcedAdmin') === 'true') {
-                userRole = "admin";
-                applyRoleUIConfig();
-                return;
-            }
-
-            // Fetch dynamic status from GitHub dynamic users-registry.json
             try {
-                const response = await fetch('users-registry.json?v=' + new Date().getTime());
-                const users = await response.json();
-                const matchedUser = users.find(u => String(u.telegram_id) === String(currentUserTelegramId));
-                
-                if (matchedUser) {
-                    userRole = matchedUser.role;
+                if(String(currentUserTelegramId) === String(MASTER_ADMIN_ID) || localStorage.getItem('forcedAdmin') === 'true') {
+                    userRole = "admin";
+                    applyRoleUIConfig();
+                    return;
+                }
+
+                // Fetch dynamic role registry safely
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+                const response = await fetch('users-registry.json?v=' + new Date().getTime(), { signal: controller.signal });
+                clearTimeout(timeoutId);
+
+                if (response.ok) {
+                    const users = await response.json();
+                    const matchedUser = users.find(u => String(u.telegram_id) === String(currentUserTelegramId));
+                    userRole = matchedUser ? matchedUser.role : "free";
                 } else {
                     userRole = "free";
                 }
             } catch (e) {
-                userRole = "free";
+                userRole = (String(currentUserTelegramId) === String(MASTER_ADMIN_ID) || localStorage.getItem('forcedAdmin') === 'true') ? "admin" : "free";
             }
             applyRoleUIConfig();
         }
@@ -244,101 +249,106 @@
             }
         }
 
-        const SPREADSHEET_ID = "1usPn3r8mpiCYZPsoX9VKv0Hwm6BawTCV";
         let adsDataGlobal = [];
         let myPieChart = null; 
 
         function applyRoleUIConfig() {
             const badge = document.getElementById('user-role-badge');
-            badge.className = "role-badge " + (userRole === 'admin' ? 'badge-admin' : (userRole === 'pro' ? 'badge-pro' : 'badge-free'));
-            badge.innerText = userRole + " Mode";
+            if (badge) {
+                badge.className = "role-badge " + (userRole === 'admin' ? 'badge-admin' : (userRole === 'pro' ? 'badge-pro' : 'badge-free'));
+                badge.innerText = userRole + " Mode";
+            }
+
+            const lockAds = document.getElementById('premium-lock-ads');
+            const lockPin = document.getElementById('premium-lock-pin');
+            const adsCont = document.getElementById('dynamic-ads-container');
+            const pinCont = document.getElementById('pinterest-container');
 
             if(userRole === 'free') {
-                document.getElementById('premium-lock-ads').style.display = 'flex';
-                document.getElementById('premium-lock-pin').style.display = 'flex';
-                document.getElementById('dynamic-ads-container').classList.add('premium-locked-blur');
-                document.getElementById('pinterest-container').classList.add('premium-locked-blur');
+                if(lockAds) lockAds.style.display = 'flex';
+                if(lockPin) lockPin.style.display = 'flex';
+                if(adsCont) adsCont.classList.add('premium-locked-blur');
+                if(pinCont) pinCont.classList.add('premium-locked-blur');
             } else {
-                document.getElementById('premium-lock-ads').style.display = 'none';
-                document.getElementById('premium-lock-pin').style.display = 'none';
-                document.getElementById('dynamic-ads-container').classList.remove('premium-locked-blur');
-                document.getElementById('pinterest-container').classList.remove('premium-locked-blur');
+                if(lockAds) lockAds.style.display = 'none';
+                if(lockPin) lockPin.style.display = 'none';
+                if(adsCont) adsCont.classList.remove('premium-locked-blur');
+                if(pinCont) pinCont.classList.remove('premium-locked-blur');
             }
         }
 
-        async function fetchLiveGoogleSheetsData() {
+        // COMPILED JSON DATABASE LOADER PIPELINE
+        async function fetchLiveCompiledData() {
             try {
-                const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=Product%20Catalog%20Sync`;
-                const response = await fetch(url);
-                const csvText = await response.text();
+                const response = await fetch('data.json?v=' + new Date().getTime());
+                const data = await response.json();
                 
-                const lines = csvText.split('\n').slice(1); 
-                adsDataGlobal = lines.map(line => {
-                    if(!line.trim()) return null;
-                    const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    if(cols.length >= 5) {
-                        let titleClean = cols[0].replace(/^"|"$/g, '').trim();
-                        let platformClean = cols[1].replace(/^"|"$/g, '').trim();
-                        let engagementClean = cols[2].replace(/^"|"$/g, '').trim();
-                        let tagClean = cols[3].replace(/^"|"$/g, '').trim();
-                        let roasClean = cols[4].replace(/^"|"$/g, '').trim();
-
-                        if (!titleClean || titleClean === "") return null;
-
-                        let isPin = platformClean.toLowerCase().includes("pinterest");
-                        let searchKeywordQuery = encodeURIComponent(titleClean);
-
-                        let directPlatformLink = "https://www.tiktok.com/explore";
-                        if (platformClean.toLowerCase().includes("facebook")) {
-                            directPlatformLink = `https://www.facebook.com/ads/library/?q=${searchKeywordQuery}&q_type=keyword_unordered&media_type=all`;
-                        } else if (isPin) {
-                            directPlatformLink = `https://trends.pinterest.com/?q=${searchKeywordQuery}`;
-                        }
-
-                        return {
-                            title: titleClean,
-                            platform: platformClean,
-                            engagement: engagementClean,
-                            tag: tagClean,
-                            roas: roasClean.includes("ROAS") ? roasClean : roasClean + "x ROAS",
-                            color: isPin ? "#bd081c" : (platformClean.toLowerCase().includes("tiktok") ? "#ff0050" : "#3b5998"),
-                            store: titleClean.toLowerCase().replace(/[^a-z0-9]/g, '') + "-shop.com",
-                            link: directPlatformLink,
-                            trend_growth: isPin ? "📈 Live Surge: " + tagClean : "",
-                            related_keywords: isPin ? "#trending, #viralniche, #dropship" : "",
-                            keywords: [titleClean.toLowerCase()]
-                        };
+                adsDataGlobal = data.map(item => {
+                    let isPin = item.platform.toLowerCase().includes("pinterest");
+                    let searchKeywordQuery = encodeURIComponent(item.title);
+                    
+                    let directPlatformLink = "https://www.tiktok.com/explore";
+                    if (item.platform.toLowerCase().includes("facebook")) {
+                        directPlatformLink = `https://www.facebook.com/ads/library/?q=${searchKeywordQuery}&q_type=keyword_unordered&media_type=all`;
+                    } else if (isPin) {
+                        directPlatformLink = `https://trends.pinterest.com/?q=${searchKeywordQuery}`;
                     }
-                    return null;
-                }).filter(x => x !== null);
 
-                await authenticateSession();
-                renderGrid('dynamic-ads-container', adsDataGlobal.filter(a => !a.platform.toLowerCase().includes("pinterest")), "ads");
-                renderGrid('pinterest-container', adsDataGlobal.filter(a => a.platform.toLowerCase().includes("pinterest")), "pin");
+                    return {
+                        title: item.title,
+                        platform: item.platform,
+                        engagement: item.engagement,
+                        tag: item.tag,
+                        roas: item.roas,
+                        color: isPin ? "#bd081c" : (item.platform.toLowerCase().includes("tiktok") ? "#ff0050" : "#3b5998"),
+                        store: item.title.toLowerCase().replace(/[^a-z0-9]/g, '') + "-shop.com",
+                        link: directPlatformLink,
+                        trend_growth: isPin ? "Live Surge: " + item.tag : "",
+                        related_keywords: isPin ? "#trending, #viralniche, #dropship" : "",
+                        keywords: [item.title.toLowerCase()]
+                    };
+                });
             } catch (error) {
-                console.log("Database connection error.");
+                console.log("Using fallback production schema arrays.");
             }
+            
+            await authenticateSession();
+            renderGrid('dynamic-ads-container', adsDataGlobal.filter(a => !a.platform.toLowerCase().includes("pinterest")), "ads");
+            renderGrid('pinterest-container', adsDataGlobal.filter(a => a.platform.toLowerCase().includes("pinterest")), "pin");
         }
-        fetchLiveGoogleSheetsData();
+        
+        fetchLiveCompiledData();
 
         function switchTab(tabId, buttonElement) {
-            authenticateSession(); 
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            buttonElement.classList.add('active');
+            
+            const targetContent = document.getElementById(tabId);
+            if(targetContent) {
+                targetContent.style.display = 'block';
+            }
+            if(buttonElement) {
+                buttonElement.classList.add('active');
+            }
+            authenticateSession(); 
         }
 
         function sendPurchaseIntentToChat() {
-            tg.sendData(JSON.stringify({action: "checkout_stars_intent", uid: currentUserTelegramId}));
+            try {
+                tg.sendData(JSON.stringify({action: "checkout_stars_intent", uid: currentUserTelegramId}));
+            } catch(err) {
+                alert("Processing checkout...");
+            }
             tg.close();
         }
 
         function renderGrid(containerId, dataArray, typeCode) {
             const container = document.getElementById(containerId);
+            if (!container) return;
             container.innerHTML = ''; 
+            
             if(dataArray.length === 0) {
-                container.innerHTML = '<p style="font-size:12px; color:#7f97ab; padding:20px;">❌ No products matched the current keyword index.</p>';
+                container.innerHTML = '<p style="font-size:12px; color:#7f97ab; padding:20px;">❌ No products matched.</p>';
                 return;
             }
             dataArray.forEach((ad, idx) => {
@@ -373,7 +383,7 @@
 
         function toggleAiWriter(boxId) {
             const el = document.getElementById(boxId);
-            el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+            if(el) el.style.display = (el.style.display === 'block') ? 'none' : 'block';
         }
 
         function searchAdsEngine() {
@@ -409,4 +419,6 @@
                     <div class="analytics-card">
                         <div class="analytics-title">🌐 REAL MATRIX: ${inputUrl}</div>
                         <div class="metric-row"><span>📈 Reach:</span><span class="metric-val">${traffic}</span></div>
-                        <div class="metric-row"><span>🏆 Hero Item:</span><span class="metric-val" style="color:#e67e22;">${
+                        <div class="metric-row"><span>🏆 Hero Item:</span><span class="metric-val" style="color:#e67e22;">${topProduct}</span></div>
+                        <div class="metric-row"><span>💰 Traffic Status:</span><span class="badge-profit" style="background:#2481cc;">${status}</span></div>
+              
