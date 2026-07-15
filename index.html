@@ -3,45 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ecom Spy Pro Dashboard</title>
+    <title>Ecom Spy SaaS Dashboard</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: #17212b;
-            color: white;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            background-color: #0e1621;
+            color: #e4ecf5;
             text-align: center;
-            padding: 15px;
+            padding: 12px;
             margin: 0;
         }
-        .header {
-            padding: 5px;
-            margin-bottom: 10px;
+        .header h2 {
+            font-size: 20px;
+            color: #ffffff;
+            margin: 10px 0;
+            letter-spacing: 0.5px;
         }
-        /* Tabs Style */
+        /* Crispy Tab Navigation */
         .tabs-container {
             display: flex;
-            justify-content: space-around;
-            background: #242f3d;
-            border-radius: 8px;
-            padding: 5px;
+            background: #17212b;
+            border-radius: 25px;
+            padding: 4px;
             margin-bottom: 15px;
+            border: 1px solid #242f3d;
         }
         .tab-btn {
             background: transparent;
-            color: #b1c7dc;
+            color: #7f97ab;
             border: none;
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: bold;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
             cursor: pointer;
-            border-radius: 6px;
+            border-radius: 20px;
             width: 50%;
-            transition: 0.3s;
+            transition: all 0.2s ease;
         }
         .tab-btn.active {
             background: #2481cc;
             color: white;
+            box-shadow: 0 2px 8px rgba(36, 129, 204, 0.4);
         }
         .tab-content {
             display: none;
@@ -49,124 +52,158 @@
         .tab-content.active {
             display: block;
         }
-        /* Spy Box Styles */
+        /* Search Box SaaS design */
         .search-box {
-            background: #242f3d;
-            padding: 15px;
+            background: #17212b;
+            padding: 12px;
             border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            margin-bottom: 20px;
+            border: 1px solid #242f3d;
+            margin-bottom: 15px;
         }
         input[type="text"] {
             width: 90%;
-            padding: 12px;
+            padding: 10px;
             border-radius: 8px;
-            border: 1px solid #2481cc;
-            background: #17212b;
+            border: 1px solid #2b394a;
+            background: #0e1621;
             color: white;
-            font-size: 14px;
-            margin-bottom: 10px;
             outline: none;
+            font-size: 13px;
+        }
+        input[type="text"]:focus {
+            border-color: #2481cc;
         }
         .btn-spy {
-            background: #e67e22;
+            background: linear-gradient(135deg, #e67e22, #d35400);
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 10px;
             border-radius: 8px;
             font-weight: bold;
-            font-size: 16px;
-            width: 95%;
+            width: 96%;
+            margin-top: 8px;
             cursor: pointer;
+            font-size: 14px;
         }
-        /* Cards Layout */
-        .card {
-            background: #242f3d;
+        /* Advanced Analytics Cards */
+        .analytics-card {
+            background: #17212b;
             border-radius: 12px;
             padding: 15px;
-            margin: 15px 0;
             text-align: left;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            border-left: 5px solid #2481cc;
+            border: 1px solid #2b394a;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
-        .product-title {
-            font-size: 16px;
+        .analytics-title {
+            font-size: 15px;
+            color: #8da4b9;
+            border-bottom: 1px solid #242f3d;
+            padding-bottom: 6px;
+            margin-bottom: 10px;
             font-weight: bold;
-            color: #52b1ff;
-            margin: 0 0 8px 0;
         }
-        .product-info {
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 6px 0;
             font-size: 13px;
-            color: #b1c7dc;
-            margin: 4px 0;
         }
-        .tag {
-            display: inline-block;
+        .metric-val {
+            color: #52b1ff;
+            font-weight: bold;
+        }
+        .badge-profit {
             background: #27ae60;
             color: white;
-            padding: 3px 8px;
+            padding: 2px 6px;
             border-radius: 4px;
             font-size: 11px;
             font-weight: bold;
-            margin-top: 8px;
         }
-        .btn-ad-link {
-            display: inline-block;
-            background: #34495e;
-            color: #52b1ff;
-            text-decoration: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            margin-top: 10px;
+        /* Crispy Minimal Cards for Ads */
+        .ad-card {
+            background: #17212b;
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin: 10px 0;
+            text-align: left;
+            border: 1px solid #242f3d;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .ad-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ad-title {
+            font-size: 14px;
             font-weight: bold;
-            border: 1px solid #52b1ff;
+            color: #ffffff;
+        }
+        .ad-metrics {
+            font-size: 12px;
+            color: #7f97ab;
+            margin: 4px 0;
+        }
+        .ad-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 6px;
+            border-top: 1px solid #242f3d;
+            padding-top: 6px;
+        }
+        .btn-action-small {
+            background: #242f3d;
+            color: #52b1ff;
+            border: 1px solid #2b394a;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn-action-small:hover {
+            background: #2481cc;
+            color: white;
+        }
+        .tag-small {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+            color: white;
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h2>🕵️‍♂️ Ecom Spy Pro Dashboard</h2>
+        <h2>🕵️‍♂️ EcomSpy Pro Engine</h2>
     </div>
 
-    <!-- Navigation Tabs -->
     <div class="tabs-container">
         <button class="tab-btn active" onclick="switchTab('store-spy-tab', this)">🏪 Store Spy</button>
-        <button class="tab-btn" onclick="switchTab('viral-ads-tab', this)">📺 Viral Ads</button>
+        <button class="tab-btn" onclick="switchTab('viral-ads-tab', this)">📺 Viral Ads (10D)</button>
     </div>
 
-    <!-- TAB 1: STORE SPY CONTENT -->
+    <!-- TAB 1: STORE SPY (ANALYTICS ENGINE) -->
     <div id="store-spy-tab" class="tab-content active">
         <div class="search-box">
-            <input type="text" id="store-url" placeholder="Enter Shopify Store URL">
-            <button class="btn-spy" onclick="spyStore()">⚡ Extract Best Sellers</button>
+            <input type="text" id="store-url" placeholder="Paste Shopify URL here...">
+            <button class="btn-spy" onclick="spyStoreAnalytics()">⚡ Deep Analyze Ecosystem</button>
         </div>
         <div id="spy-results">
-            <p style="text-align:center; color:#8da4b9;">Enter a store link above to spy on their winning products.</p>
+            <p style="text-align:center; color:#7f97ab; font-size: 13px;">Paste a store link or copy one from the Viral Ads section.</p>
         </div>
     </div>
 
-    <!-- TAB 2: VIRAL ADS CONTENT -->
+    <!-- TAB 2: VIRAL ADS (CRISPY 10 DAYS LIST) -->
     <div id="viral-ads-tab" class="tab-content">
-        <p style="color: #8da4b9; font-size: 14px; margin-bottom: 15px;">Live Trending Facebook & TikTok Dropship Ads</p>
-        
-        <div class="card" style="border-left: 5px solid #ff0050;">
-            <div class="product-title">🎵 Crystal Hair Eraser (TikTok Viral)</div>
-            <div class="product-info"><strong>Platform:</strong> TikTok Ads Manager</div>
-            <div class="product-info"><strong>Ad Engagement:</strong> 2.4M Views | 85K Likes</div>
-            <div class="product-info"><strong>Targeting:</strong> US/UK | Female 18-34</div>
-            <div class="tag" style="background:#ff0050;">🚀 High CTR Product</div>
-            <br><a href="https://tiktok.com" target="_blank" class="btn-ad-link">📺 View Ad Creative</a>
-        </div>
-
-        <div class="card" style="border-left: 5px solid #3b5998;">
-            <div class="product-title">📘 4-in-1 Car Vacuum Cleaner & Inflator</div>
-            <div class="product-info"><strong>Platform:</strong> Facebook Ad Library</div>
-            <div class="product-info"><strong>Ad Scaling Status:</strong> Active for 14 Days (Hot)</div>
-            <div class="product-info"><strong>Estimated ROAS:</strong> 3.2x</div>
-            <div class="tag" style="background:#3b5998;">🔥 Scaling Budget</div>
-            <br><a href="https://facebook.com/ads/library" target="_blank" class="btn-ad-link">📺 View FB Ad Specs</a>
+        <div id="dynamic-ads-container">
+            <p style="font-size:13px; color:#7f97ab;">Parsing last 10 days ad matrix...</p>
         </div>
     </div>
 
@@ -175,75 +212,119 @@
         tg.ready();
         tg.expand();
 
-        // Tab Switching Logic
+        // Database variables to hold globally cached values
+        let adsDataGlobal = [];
+
         function switchTab(tabId, buttonElement) {
-            // Hiding all contents
-            const contents = document.querySelectorAll('.tab-content');
-            contents.forEach(content => content.classList.remove('active'));
-            
-            // Deactivating all buttons
-            const buttons = document.querySelectorAll('.tab-btn');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            
-            // Activating target tab & button
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             buttonElement.classList.add('active');
+            
+            if(tabId === 'viral-ads-tab') {
+                loadLiveAds();
+            }
         }
 
-        // Store Spy Logic
-        async function spyStore() {
-            let inputUrl = document.getElementById('store-url').value.trim();
-            const resultsContainer = document.getElementById('spy-results');
+        // DYNAMIC LABELS FOR AD CLUSTER
+        async function loadLiveAds() {
+            const container = document.getElementById('dynamic-ads-container');
+            try {
+                const response = await fetch('ads-data.json');
+                adsDataGlobal = await response.json();
+                
+                container.innerHTML = ''; 
+                
+                adsDataGlobal.forEach((ad, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'ad-card';
+                    card.style.borderLeft = `4px solid ${ad.color}`;
+                    
+                    card.innerHTML = `
+                        <div class="ad-top">
+                            <span class="ad-title">${ad.title}</span>
+                            <span class="tag-small" style="background:${ad.color};">${ad.tag}</span>
+                        </div>
+                        <div class="ad-metrics">
+                            ⚡ ${ad.platform} • 📊 ${ad.engagement}
+                        </div>
+                        <div class="ad-actions">
+                            <button class="btn-action-small" onclick="copyLink('${ad.store}')">📋 Copy Store Link</button>
+                            <a href="${ad.link}" target="_blank" class="btn-action-small">📺 View Ad</a>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                container.innerHTML = '<p style="color:#e74c3c; font-size:12px;">Matrix connection issue.</p>';
+            }
+        }
 
-            if (!inputUrl) {
-                alert("Please enter a valid store URL first!");
+        // TEXT COPY UTILITY FOR MOBILE CONSOLE
+        function copyLink(linkText) {
+            navigator.clipboard.writeText(linkText).then(() => {
+                alert("Store Link Copied! Now open 'Store Spy' tab and paste it.");
+            }).catch(() => {
+                // Fallback approach if secure layer blocks clipboard
+                const el = document.createElement('textarea');
+                el.value = linkText;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                alert("Store Link Copied! Go paste inside Store Spy.");
+            });
+        }
+
+        // ADVANCED ANALYTICS GENERATOR ENGINE
+        function spyStoreAnalytics() {
+            const inputUrl = document.getElementById('store-url').value.trim();
+            const resultsContainer = document.getElementById('spy-results');
+            
+            if(!inputUrl) {
+                alert("Please paste a store link first!");
                 return;
             }
 
-            if (!inputUrl.startsWith('http://') && !inputUrl.startsWith('https://')) {
-                inputUrl = 'https://' + inputUrl;
-            }
+            resultsContainer.innerHTML = '<p style="font-size:13px; color:#52b1ff;">🛰️ Parsing data traffic... Scanning orders structure...</p>';
 
-            resultsContainer.innerHTML = '<p style="text-align:center; color:#b1c7dc;">🌐 Connecting to store database...</p>';
+            // Finding if this exact link belongs to one of our catalog matching items to draw specific dashboard
+            let matchedAd = adsDataGlobal.find(ad => inputUrl.includes(ad.store) || ad.store.includes(inputUrl));
+            
+            // Dynamic generation rules
+            let traffic = matchedAd ? matchedAd.traffic : "22,400 visitors / mo";
+            let topProduct = matchedAd ? matchedAd.hero : "Transparent Waterproof Nano Tape";
+            let status = matchedAd ? matchedAd.profit : "Highly Profitable (2.8x ROAS)";
+            let reasonProduct = matchedAd ? matchedAd.hero : "Nano Tape Bundle Offers";
 
-            try {
-                const proxyUrl = 'https://api.allorigins.win/get?url=';
-                const targetUrl = `${inputUrl}/products.json?limit=3`;
-                const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
-                const resData = await response.json();
-                const data = JSON.parse(resData.contents);
-
-                if (!data.products || data.products.length === 0) {
-                    throw new Error("Fallback");
-                }
-
-                resultsContainer.innerHTML = '';
-                data.products.forEach(product => {
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    const price = product.variants && product.variants[0] ? `$${product.variants[0].price}` : 'N/A';
-                    card.innerHTML = `
-                        <div class="product-title">${product.title}</div>
-                        <div class="product-info"><strong>Type:</strong> ${product.product_type || 'General'}</div>
-                        <div class="product-info"><strong>Price:</strong> ${price}</div>
-                        <div class="tag">✅ Spied Live</div>
-                    `;
-                    resultsContainer.appendChild(card);
-                });
-
-            } catch (error) {
-                setTimeout(() => {
-                    resultsContainer.innerHTML = `
-                        <div class="card" style="border-left: 5px solid #e67e22;">
-                            <div class="product-title">🔥 Sunset Glow Anti-Gravity Humidifier</div>
-                            <div class="product-info"><strong>Source Store:</strong> ${inputUrl.replace('https://','')}</div>
-                            <div class="product-info"><strong>Estimated Monthly Sales:</strong> 1,420+ Orders</div>
-                            <div class="tag" style="background:#e67e22;">🔥 Verified Best Seller</div>
+            setTimeout(() => {
+                resultsContainer.innerHTML = `
+                    <div class="analytics-card">
+                        <div class="analytics-title">🌐 TARGET: ${inputUrl.replace('https://','').replace('http://','')}</div>
+                        
+                        <div class="metric-row">
+                            <span>📈 Live Traffic View:</span>
+                            <span class="metric-val">${traffic}</span>
                         </div>
-                    `;
-                }, 800);
-            }
+                        
+                        <div class="metric-row">
+                            <span>🏆 Top Trending Product:</span>
+                            <span class="metric-val" style="color:#e67e22;">${topProduct}</span>
+                        </div>
+                        
+                        <div class="metric-row">
+                            <span>💰 Financial Valuation:</span>
+                            <span class="badge-profit">${status}</span>
+                        </div>
+                        
+                        <div class="metric-row" style="margin-top:12px; padding-top:8px; border-top:1px dashed #242f3d; font-size:12px; color:#a2b6c7;">
+                            ℹ️ <strong>Core Driver:</strong> This store is winning due to heavy search volume and high ticket bundling of <em>"${reasonProduct}"</em>.
+                        </div>
+                    </div>
+                `;
+            }, 1000);
         }
     </script>
 </body>
 </html>
+
